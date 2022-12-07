@@ -1,6 +1,7 @@
 const User = require("../models/user")
 const jwt = require("jsonwebtoken")
 const { UnauthenticatedError } = require("../errors")
+// const { mongoose } = require("mongoose")
 
 const auth = async (req, res, next) => {
   //! check header
