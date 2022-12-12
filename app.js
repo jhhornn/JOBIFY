@@ -8,32 +8,46 @@ const {
   invalidPathHandler
 } = require("./middlewares/errHandler")
 
-const app = express()
+//! extra security packages
+const helmet = require("helmet")
+const cors = require("cors")
+const xss = require("xss-clean")
+const rateLimiter = require("express-rate-limit")
 
-// routers
+const app = express()
+const authenticateUser = require("./middlewares/authentication")
+
+//! routers
 const authRouter = require("./routes/auth")
 const jobRouter = require("./routes/jobs")
 
-
+app.set("trust proxy", 1)
+app.use(
+  rateLimiter({
+    windowsMs: 15 * 60 * 1000, // 15 minutes
+    max: 100 // limit each IP to 100 requestd per windowsMs
+  })
+)
 app.use(express.json())
+app.use(helmet())
+app.use(cors())
+app.use(xss())
 app.use(urlencoded({ extended: false }))
 app.use(morgan("dev"))
 
-
-//routes
+//! routes
 app.use("/api/v1/auth", authRouter)
-app.use("/api/v1/jobs", jobRouter)
+app.use("/api/v1/jobs", authenticateUser, jobRouter)
 
 app.get("/", (req, res) => {
   res.send("<h1>Job API</h1><a href='/api/v1/jobs'>Jobs route</a>")
 })
 
-
 app.all("*", (req, res, next) => {
   next()
 })
 
-// error handlers
+//! error handlers
 app.use(errorLogger)
 app.use(errorResponder)
 app.use(invalidPathHandler)
