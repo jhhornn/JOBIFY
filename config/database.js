@@ -8,17 +8,18 @@ const MONGODB_URI =
     : process.env.MONGODB_URI
 
 const connectDB = async () => {
-  await mongoose
-    .connect(MONGODB_URI, {
+  try {
+    const conn = await mongoose.connect(MONGODB_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true
     })
-    .then((conn) => {
-      console.log(
-        `Connected to Mongo! Database name: ${conn.connections[0].name}`
-      )
-    })
-    .catch((err) => console.error("Error connecting to mongo", err))
+    console.log(
+      `Connected to Mongo! Database name: ${conn.connections[0].name}`
+    )
+  } catch (err) {
+    console.error("Error connecting to mongo", err)
+    process.exit(1)
+  }
 }
 
 module.exports = connectDB
